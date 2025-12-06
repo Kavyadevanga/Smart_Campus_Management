@@ -1,0 +1,31 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django DB
+*.sqlite3
+
+# Media files
+media/
+
+# Environment variables
+.env
+
+# Virtual environment
+venv/
+.venv/
+
+# Django migrations (optional, sometimes you want to keep them)
+*/migrations/*.pyc
+*/migrations/*.py[cod]
+*/migrations/__pycache__/
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
