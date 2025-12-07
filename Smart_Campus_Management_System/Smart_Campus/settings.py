@@ -77,6 +77,11 @@ WSGI_APPLICATION = 'Smart_Campus.wsgi.application'
 AUTH_USER_MODEL = 'accounts.User'  # or whatever app your User model is in
 
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases

@@ -1,23 +1,34 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
+
 class Department(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
-    head = models.ForeignKey('User', on_delete=models.SET_NULL, null=True, blank=True, related_name='headed_departments')
+    head = models.ForeignKey(
+        'User', 
+        on_delete=models.SET_NULL, 
+        null=True, blank=True, 
+        related_name='headed_departments'
+    )
 
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.head:
+            self.head.department = self
+            self.head.save()
+
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
     def create_user(self, email, password=None, **extra_fields):
-        """
-        Create and save a regular User with the given email and password.
-        """
         if not email:
             raise ValueError("The Email must be set")
+
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -25,9 +36,6 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
-        """
-        Create and save a SuperUser with the given email and password.
-        """
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
@@ -41,20 +49,32 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
+
     username = None  # remove default username
+
+    # Academic details
     roll = models.IntegerField(unique=True, null=True, blank=True)
     staff_id = models.IntegerField(unique=True, null=True, blank=True)
+
+    # Personal info
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=15, null=True, blank=True)
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='users'
+    )
     dob = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=10, null=True, blank=True)
 
+    # Login config
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
-    objects = UserManager()  # <--- attach custom manager
+    objects = UserManager()
 
     def __str__(self):
-        return self.email
+        return f"{self.email}"
