@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import Group, Permission
 from .models import User, Department
 
 class LoginSerializer(serializers.Serializer):
@@ -55,3 +56,38 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
 
+class PermissionSerializer(serializers.ModelSerializer):
+    """Serializer for Permission model"""
+    class Meta:
+        model = Permission
+        fields = ['id', 'name', 'codename', 'content_type']
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    """Serializer for Group model with permissions"""
+    permissions = PermissionSerializer(many=True, read_only=True)
+    permission_ids = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Permission.objects.all(),
+        source='permissions',
+        write_only=True,
+        required=False
+    )
+    
+    class Meta:
+        model = Group
+        fields = ['id', 'name', 'permissions', 'permission_ids']
+    
+    def create(self, validated_data):
+        permissions = validated_data.pop('permissions', [])
+        group = Group.objects.create(**validated_data)
+        group.permissions.set(permissions)
+        return group
+    
+    def update(self, instance, validated_data):
+        permissions = validated_data.pop('permissions', None)
+        instance.name = validated_data.get('name', instance.name)
+        instance.save()
+        if permissions is not None:
+            instance.permissions.set(permissions)
+        return instance
