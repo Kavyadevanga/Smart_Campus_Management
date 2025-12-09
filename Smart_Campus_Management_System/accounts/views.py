@@ -117,7 +117,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(groups__name=role)
             return queryset
 
-        return super().get_queryset().filter(id=user.id)
+            return super().get_queryset().filter(id=user.id)
 
 
 
